@@ -7,37 +7,36 @@ namespace AssemblyInspector
 	public class ViewModel : INotifyPropertyChanged
 	{
 		private string _path;
-		private readonly Model _model;
+		private string _name;
+		private AssemblyInformation _info;
 		private readonly ICommand _browseCommand;
-		private readonly ICommand _updateCommand;
 
 		public ViewModel()
 		{
-			_model = new Model();
 			_browseCommand = new BrowseCommand(this);
-			_updateCommand = new UpdateCommand(this);
 		}
 
 		public ICommand BrowseCommand { get { return _browseCommand; } }
-		public ICommand UpdateCommand { get { return _updateCommand; } }
 
 		public void Browse()
 		{
-			FileDialog dialog = new OpenFileDialog
+			var dialog = new OpenFileDialog
 			{
 				Filter = "*.exe,*.dll|*.exe;*.dll"
 			};
 
 			if (dialog.ShowDialog() == DialogResult.OK)
 			{
-				Path = dialog.FileName;
-				Update();
+				Update(dialog.FileName);
 			}
 		}
 
-		public void Update()
+		private void Update(string path)
 		{
-			_model.PopulateData(_path);
+			Path = path;
+			Name = path.Substring(_path.LastIndexOf('\\') + 1);
+
+			_info = new AssemblyInformation(path);
 			InvokePropertyChanged("Version");
 			InvokePropertyChanged("PublicKey");
 			InvokePropertyChanged("Type");
@@ -46,35 +45,21 @@ namespace AssemblyInspector
 			InvokePropertyChanged("Is64Bit");
 		}
 
-		public string Name { get { return string.IsNullOrEmpty(_path) ? string.Empty : _path.Substring(_path.LastIndexOf('\\') + 1); } }
-		public string Version { get { return _model.AssemblyVersion; } }
-		public string Type { get { return _model.Type; } }
-		public bool Is32Bit { get { return _model.Is32Bit; } }
-		public bool Is64Bit { get { return _model.Is64Bit; } }
-
 		public string Path
 		{
 			get { return _path; }
-			set { _path = value; InvokePropertyChanged("Path"); InvokePropertyChanged("Name"); }
+			private set { _path = value; InvokePropertyChanged("Path"); }
 		}
 
-		public string Code
+		public string Name
 		{
-			get
-			{
-				string ret = string.Empty;
-				if (_model.IsCil)
-				{
-					if (!string.IsNullOrEmpty(_model.Version))
-						ret = ".NET " + _model.Version;
-				}
-				else
-				{
-					if (!string.IsNullOrEmpty(_model.Code))
-						ret = "Native " + _model.Code;
-				}
-				return ret;
-			}
+			get { return _name; }
+			private set { _name = value; InvokePropertyChanged("Name"); }
+		}
+
+		public string Version
+		{
+			get { return _info != null ? _info.AssemblyVersion : string.Empty; }
 		}
 
 		public string PublicKey
@@ -83,17 +68,51 @@ namespace AssemblyInspector
 			{
 				string publicKey = string.Empty;
 
-				if (_model.IsSigned)
+				if (_info.IsSigned)
 				{
-					publicKey = _model.PublicKey;
+					publicKey = _info.PublicKey;
 				}
-				else if (!string.IsNullOrEmpty(_model.Type))
+				else if (!string.IsNullOrEmpty(_info.Type))
 				{
 					publicKey = "<unsigned>";
 				}
 
 				return publicKey;
 			}
+		}
+
+		public string Type
+		{
+			get {  return _info != null ? _info.Type : string.Empty; }
+		}
+
+		public string Code
+		{
+			get
+			{
+				string ret = string.Empty;
+				if (_info.IsCil)
+				{
+					if (!string.IsNullOrEmpty(_info.Version))
+						ret = ".NET " + _info.Version;
+				}
+				else
+				{
+					if (!string.IsNullOrEmpty(_info.Code))
+						ret = "Native " + _info.Code;
+				}
+				return ret;
+			}
+		}
+
+		public bool Is32Bit
+		{
+			get { return _info != null && _info.Is32Bit; }
+		}
+
+		public bool Is64Bit
+		{
+			get { return _info != null && _info.Is64Bit; }
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

@@ -1,0 +1,1 @@
+dumpbin.exe %1 %2 > dumpbin.txt

@@ -38,20 +38,19 @@ namespace AssemblyInspector
 		public void Update()
 		{
 			_model.PopulateData(_path);
-            InvokePropertyChanged("Version");
+			InvokePropertyChanged("Version");
+			InvokePropertyChanged("PublicKey");
 			InvokePropertyChanged("Type");
 			InvokePropertyChanged("Code");
 			InvokePropertyChanged("Is32Bit");
 			InvokePropertyChanged("Is64Bit");
-			InvokePropertyChanged("IsSigned");
 		}
 
 		public string Name { get { return string.IsNullOrEmpty(_path) ? string.Empty : _path.Substring(_path.LastIndexOf('\\') + 1); } }
-        public string Version { get { return _model.AssemblyVersion; } }
+		public string Version { get { return _model.AssemblyVersion; } }
 		public string Type { get { return _model.Type; } }
 		public bool Is32Bit { get { return _model.Is32Bit; } }
 		public bool Is64Bit { get { return _model.Is64Bit; } }
-		public bool IsSigned { get { return _model.IsSigned; } }
 
 		public string Path
 		{
@@ -75,6 +74,25 @@ namespace AssemblyInspector
 						ret = "Native " + _model.Code;
 				}
 				return ret;
+			}
+		}
+
+		public string PublicKey
+		{
+			get
+			{
+				string publicKey = string.Empty;
+
+				if (_model.IsSigned)
+				{
+					publicKey = _model.PublicKey;
+				}
+				else if (!string.IsNullOrEmpty(_model.Type))
+				{
+					publicKey = "<unsigned>";
+				}
+
+				return publicKey;
 			}
 		}
 

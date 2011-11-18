@@ -49,18 +49,18 @@
 		</Grid.RowDefinitions>
 		<Label Grid.Column="0" Grid.Row="0" Content="Name:"/>
         <Label Grid.Column="0" Grid.Row="1" Content="Version:"/>
-		<Label Grid.Column="0" Grid.Row="2" Content="Type:"/>
-		<Label Grid.Column="0" Grid.Row="3" Content="Code:"/>
-		<Label Grid.Column="0" Grid.Row="4" Content="x86:"/>
-		<Label Grid.Column="0" Grid.Row="5" Content="x64:"/>
-		<Label Grid.Column="0" Grid.Row="6" Content="Signed:"/>
+		<Label Grid.Column="0" Grid.Row="2" Content="Public Key:"/>
+		<Label Grid.Column="0" Grid.Row="3" Content="Type:"/>
+		<Label Grid.Column="0" Grid.Row="4" Content="Code:"/>
+		<Label Grid.Column="0" Grid.Row="5" Content="x86:"/>
+		<Label Grid.Column="0" Grid.Row="6" Content="x64:"/>
 		<TextBox Grid.Column="1" Grid.Row="0" IsReadOnly="True" Text="{Binding Name, Mode=OneWay}"/>
         <TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Text="{Binding Version, Mode=OneWay}"/>
-		<TextBox Grid.Column="1" Grid.Row="2" IsReadOnly="True" Text="{Binding Type, Mode=OneWay}"/>
-		<TextBox Grid.Column="1" Grid.Row="3" IsReadOnly="True" Text="{Binding Code, Mode=OneWay}"/>
-		<CheckBox Grid.Column="1" Grid.Row="4" IsEnabled="False" IsChecked="{Binding Is32Bit, Mode=OneWay}"/>
-		<CheckBox Grid.Column="1" Grid.Row="5" IsEnabled="False" IsChecked="{Binding Is64Bit, Mode=OneWay}"/>
-		<CheckBox Grid.Column="1" Grid.Row="6" IsEnabled="False" IsChecked="{Binding IsSigned, Mode=OneWay}"/>
+		<TextBox Grid.Column="1" Grid.Row="2" IsReadOnly="True" Text="{Binding PublicKey, Mode=OneWay}"/>
+		<TextBox Grid.Column="1" Grid.Row="3" IsReadOnly="True" Text="{Binding Type, Mode=OneWay}"/>
+		<TextBox Grid.Column="1" Grid.Row="4" IsReadOnly="True" Text="{Binding Code, Mode=OneWay}"/>
+		<CheckBox Grid.Column="1" Grid.Row="5" IsEnabled="False" IsChecked="{Binding Is32Bit, Mode=OneWay}"/>
+		<CheckBox Grid.Column="1" Grid.Row="6" IsEnabled="False" IsChecked="{Binding Is64Bit, Mode=OneWay}"/>
 		<Grid Grid.Row="7" Grid.ColumnSpan="2">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition/>

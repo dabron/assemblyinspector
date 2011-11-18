@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace AssemblyInspector
@@ -9,20 +7,21 @@ namespace AssemblyInspector
 	public class Model
 	{
 		private string _path;
-        private string _assemblyVersion;
+		private string _assemblyVersion;
 		private string _version;
 		private string _type;
 		private string _code;
+		private string _publicKey;
 		private bool _cil;
 		private bool _32bit;
 		private bool _64bit;
 		private bool _signed;
 
-		public string RawData { get; private set; }
-        public string AssemblyVersion { get { return _assemblyVersion; } }
+		public string AssemblyVersion { get { return _assemblyVersion; } }
 		public string Version { get { return _version; } }
 		public string Type { get { return _type; } }
 		public string Code { get { return _code; } }
+		public string PublicKey { get { return _publicKey; } }
 		public bool IsCil { get { return _cil; } }
 		public bool Is32Bit { get { return _32bit; } }
 		public bool Is64Bit { get { return _64bit; } }
@@ -32,28 +31,30 @@ namespace AssemblyInspector
 		{
 			_path = path;
 			Reset();
-            GetAssemblyVersion();
+			GetAssemblyVersion();
 			StartDumpbin();
 			StartCorflags();
+			StartSn();
 		}
 
 		private void Reset()
 		{
-            _assemblyVersion = string.Empty;
+			_assemblyVersion = string.Empty;
 			_version = string.Empty;
 			_type = string.Empty;
 			_code = string.Empty;
+			_publicKey = string.Empty;
 			_cil = false;
 			_32bit = false;
 			_64bit = false;
 			_signed = false;
 		}
 
-        private void GetAssemblyVersion()
-        {
-            FileVersionInfo info = FileVersionInfo.GetVersionInfo(_path);
-            _assemblyVersion = info.FileVersion;
-        }
+		private void GetAssemblyVersion()
+		{
+			FileVersionInfo info = FileVersionInfo.GetVersionInfo(_path);
+			_assemblyVersion = info.FileVersion;
+		}
 
 		private void StartDumpbin()
 		{
@@ -88,6 +89,24 @@ namespace AssemblyInspector
 
 			string result = p.StandardOutput.ReadToEnd();
 			ParseCorflags(result);
+		}
+
+		private void StartSn()
+		{
+			ProcessStartInfo startInfo = new ProcessStartInfo
+			{
+				FileName = "sn.exe",
+				Arguments = string.Format("-q -T \"{0}\"", _path),
+				RedirectStandardOutput = true,
+				UseShellExecute = false,
+				CreateNoWindow = true
+			};
+
+			Process p = Process.Start(startInfo);
+			p.WaitForExit();
+
+			string result = p.StandardOutput.ReadToEnd();
+			ParseSn(result);
 		}
 
 		private void ParseDumpbin(string results)
@@ -129,6 +148,12 @@ namespace AssemblyInspector
 				_32bit = Regex.Match(results, @"PE\s*:\s*PE32\r\n").Success;
 				_64bit = Regex.Match(results, @"32BIT\s*:\s*0\r\n").Success;
 			}
+		}
+
+		private void ParseSn(string results)
+		{
+			//Public key token is 89b483f429c47342
+			_publicKey = Regex.Match(results, @"Public key token is\s*(.*)\r\n").Groups[1].Value;
 		}
 	}
 }

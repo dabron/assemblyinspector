@@ -23,5 +23,13 @@ namespace AssemblyInspector
 		{
 			_vm.Browse();
 		}
+
+		private void InvokeCanExecuteChanged()
+		{
+			if (CanExecuteChanged != null)
+			{
+				CanExecuteChanged(this, EventArgs.Empty);
+			}
+		}
 	}
 }

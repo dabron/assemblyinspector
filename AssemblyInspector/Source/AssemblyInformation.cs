@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace AssemblyInspector
@@ -8,15 +9,19 @@ namespace AssemblyInspector
 	{
 		private readonly string _path;
 
-		public string AssemblyVersion { get; private set; }
+		public string Name { get; private set; }
 		public string Version { get; private set; }
-		public string PublicKey { get; private set; }
-		public string Type { get; private set; }
-		public string Code { get; private set; }
-		public bool IsCil { get; private set; }
+		public string Culture { get; private set; }
+		public string PublicKeyToken { get; private set; }
+		public string Architecture { get; private set; }
+		public string FileType { get; private set; }
 		public bool Is32Bit { get; private set; }
 		public bool Is64Bit { get; private set; }
 		public bool IsSigned { get; private set; }
+		public bool IsValid { get; private set; }
+
+		private string DotNetVersion { get; set; }
+		private bool IsCil { get; set; }
 
 		public AssemblyInformation(string path)
 		{
@@ -26,12 +31,30 @@ namespace AssemblyInspector
 			StartDumpbin();
 			StartCorflags();
 			StartSn();
+			StartSnValid();
 		}
 
 		private void GetAssemblyVersion()
 		{
 			var info = FileVersionInfo.GetVersionInfo(_path);
-			AssemblyVersion = info.FileVersion;
+			Version = info.FileVersion;
+
+			try
+			{
+				var assembly = Assembly.ReflectionOnlyLoadFrom(_path);
+				var name = assembly.GetName();
+				Name = name.Name;
+				Culture = name.CultureInfo.ToString();
+				PublicKeyToken = name.GetPublicKeyToken().ToString();
+			}
+			catch
+			{
+			}
+
+			if (string.IsNullOrEmpty(Name))
+			{
+				Name = Path.GetFileNameWithoutExtension(_path);
+			}
 		}
 
 		private void StartDumpbin()
@@ -66,6 +89,14 @@ namespace AssemblyInspector
 			ParseSn(result);
 		}
 
+		private void StartSnValid()
+		{
+			const string file = "sn.exe";
+			string args = string.Format("-vf \"{0}\"", _path);
+			string result = Start(file, args);
+			ParseSnValid(result);
+		}
+
 		private string Start(string file, string args)
 		{
 			string result;
@@ -83,7 +114,6 @@ namespace AssemblyInspector
 			{
 				p.WaitForExit();
 				result = p.StandardOutput.ReadToEnd();
-				ParseSn(result);
 			}
 
 			return result;
@@ -99,8 +129,8 @@ namespace AssemblyInspector
 			//OPTIONAL HEADER VALUES
 			//             10B magic # (PE32)
 			//             20B magic # (PE32+)
-			Type = Regex.Match(results, @"File Type:\s*(.*)\r\n").Groups[1].Value;
-			Code = Regex.Match(results, @"machine \((.*)\)\r\n").Groups[1].Value;
+			FileType = Regex.Match(results, @"File Type:\s*(.*)\r\n").Groups[1].Value;
+			Architecture = Regex.Match(results, @"machine \((.*)\)\r\n").Groups[1].Value;
 			Is32Bit = Regex.Match(results, @"machine \(x86\)\r\n").Success;
 			Is64Bit = Regex.Match(results, @"machine \(x64\)\r\n").Success;
 		}
@@ -114,9 +144,9 @@ namespace AssemblyInspector
 			//ILONLY    : 1
 			//32BIT     : 1
 			//Signed    : 0
-			Version = Regex.Match(results, @"Version\s*:\s*(.*)\r\n").Groups[1].Value;
+			DotNetVersion = Regex.Match(results, @"Version\s*:\s*(.*)\r\n").Groups[1].Value;
 
-			if (!string.IsNullOrEmpty(Version))
+			if (!string.IsNullOrEmpty(DotNetVersion))
 			{
 				IsCil = Regex.Match(results, @"ILONLY\s*:\s*1\r\n").Success;
 				IsSigned = Regex.Match(results, @"Signed\s*:\s*1\r\n").Success;
@@ -127,13 +157,21 @@ namespace AssemblyInspector
 				// x64       PE32+  0
 				Is32Bit = Regex.Match(results, @"PE\s*:\s*PE32\r\n").Success;
 				Is64Bit = Regex.Match(results, @"32BIT\s*:\s*0\r\n").Success;
+
+				Architecture = string.Format("CIL ({0})", DotNetVersion);
 			}
 		}
 
 		private void ParseSn(string results)
 		{
 			//Public key token is 89b483f429c47342
-			PublicKey = Regex.Match(results, @"Public key token is\s*(.*)\r\n").Groups[1].Value;
+			PublicKeyToken = Regex.Match(results, @"Public key token is\s*(.*)\r\n").Groups[1].Value;
+		}
+
+		private void ParseSnValid(string results)
+		{
+			//Assembly 'C:\bin\sample.exe' is valid
+			IsValid = Regex.Match(results, @"is valid\r\n").Success;
 		}
 	}
 }

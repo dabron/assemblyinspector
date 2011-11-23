@@ -6,8 +6,10 @@ namespace AssemblyInspector
 {
 	public class ViewModel : INotifyPropertyChanged
 	{
+		private const float Highlighted = 1f;
+		private const float Unhighlighted = 0.25f;
+
 		private string _path;
-		private string _name;
 		private AssemblyInformation _info;
 		private readonly ICommand _browseCommand;
 
@@ -34,15 +36,19 @@ namespace AssemblyInspector
 		private void Update(string path)
 		{
 			Path = path;
-			Name = path.Substring(_path.LastIndexOf('\\') + 1);
 
 			_info = new AssemblyInformation(path);
+			InvokePropertyChanged("Name");
 			InvokePropertyChanged("Version");
-			InvokePropertyChanged("PublicKey");
-			InvokePropertyChanged("Type");
-			InvokePropertyChanged("Code");
+			InvokePropertyChanged("Culture");
+			InvokePropertyChanged("PublicKeyToken");
+			InvokePropertyChanged("Architecture");
+			InvokePropertyChanged("IsExe");
+			InvokePropertyChanged("IsDll");
 			InvokePropertyChanged("Is32Bit");
 			InvokePropertyChanged("Is64Bit");
+			InvokePropertyChanged("IsSigned");
+			InvokePropertyChanged("IsValid");
 		}
 
 		public string Path
@@ -51,69 +57,17 @@ namespace AssemblyInspector
 			private set { _path = value; InvokePropertyChanged("Path"); }
 		}
 
-		public string Name
-		{
-			get { return _name; }
-			private set { _name = value; InvokePropertyChanged("Name"); }
-		}
-
-		public string Version
-		{
-			get { return _info != null ? _info.AssemblyVersion : string.Empty; }
-		}
-
-		public string PublicKey
-		{
-			get
-			{
-				string publicKey = string.Empty;
-
-				if (_info.IsSigned)
-				{
-					publicKey = _info.PublicKey;
-				}
-				else if (!string.IsNullOrEmpty(_info.Type))
-				{
-					publicKey = "<unsigned>";
-				}
-
-				return publicKey;
-			}
-		}
-
-		public string Type
-		{
-			get {  return _info != null ? _info.Type : string.Empty; }
-		}
-
-		public string Code
-		{
-			get
-			{
-				string ret = string.Empty;
-				if (_info.IsCil)
-				{
-					if (!string.IsNullOrEmpty(_info.Version))
-						ret = ".NET " + _info.Version;
-				}
-				else
-				{
-					if (!string.IsNullOrEmpty(_info.Code))
-						ret = "Native " + _info.Code;
-				}
-				return ret;
-			}
-		}
-
-		public bool Is32Bit
-		{
-			get { return _info != null && _info.Is32Bit; }
-		}
-
-		public bool Is64Bit
-		{
-			get { return _info != null && _info.Is64Bit; }
-		}
+		public string Name { get { return _info != null ? _info.Name : string.Empty; } }
+		public string Version { get { return _info != null ? _info.Version : string.Empty; } }
+		public string Culture { get {  return _info != null ? _info.Culture : string.Empty; } }
+		public string PublicKeyToken { get { return _info != null ? _info.PublicKeyToken : string.Empty; } }
+		public string Architecture { get { return _info != null ? _info.Architecture : string.Empty; } }
+		public float IsExe { get { return _info != null && _info.FileType == "EXECUTABLE IMAGE" ? Highlighted : Unhighlighted; } }
+		public float IsDll { get { return _info != null && _info.FileType == "DLL" ? Highlighted : Unhighlighted; } }
+		public float Is32Bit { get { return _info != null && _info.Is32Bit ? Highlighted : Unhighlighted; } }
+		public float Is64Bit { get { return _info != null && _info.Is64Bit ? Highlighted : Unhighlighted; } }
+		public float IsSigned { get { return _info != null && _info.IsSigned ? Highlighted : Unhighlighted; } }
+		public float IsValid { get { return _info != null && _info.IsValid ? Highlighted : Unhighlighted; } }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 

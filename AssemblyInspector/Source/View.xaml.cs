@@ -7,6 +7,10 @@ namespace AssemblyInspector
 		public View()
 		{
 			InitializeComponent();
+		}
+
+		private void OnLoaded(object sender, RoutedEventArgs e)
+		{
 			DataContext = new ViewModel();
 		}
 	}

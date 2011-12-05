@@ -59,7 +59,6 @@ namespace AssemblyInspector
 
 		public string Name { get { return _info != null ? _info.Name : string.Empty; } }
 		public string Version { get { return _info != null ? _info.Version : string.Empty; } }
-		public string Culture { get {  return _info != null ? _info.Culture : string.Empty; } }
 		public string PublicKeyToken { get { return _info != null ? _info.PublicKeyToken : string.Empty; } }
 		public string Architecture { get { return _info != null ? _info.Architecture : string.Empty; } }
 		public float IsExe { get { return _info != null && _info.FileType == "EXECUTABLE IMAGE" ? Highlighted : Unhighlighted; } }

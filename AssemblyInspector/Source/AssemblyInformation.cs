@@ -11,7 +11,6 @@ namespace AssemblyInspector
 
 		public string Name { get; private set; }
 		public string Version { get; private set; }
-		public string Culture { get; private set; }
 		public string PublicKeyToken { get; private set; }
 		public string Architecture { get; private set; }
 		public string FileType { get; private set; }
@@ -20,6 +19,7 @@ namespace AssemblyInspector
 		public bool IsSigned { get; private set; }
 		public bool IsValid { get; private set; }
 
+		private string Culture { get; set; }
 		private string DotNetVersion { get; set; }
 		private bool IsCil { get; set; }
 
@@ -46,6 +46,11 @@ namespace AssemblyInspector
 				Name = name.Name;
 				Culture = name.CultureInfo.ToString();
 				PublicKeyToken = name.GetPublicKeyToken().ToString();
+
+				if (!string.IsNullOrEmpty(Culture))
+				{
+					Name = string.Format("{0} [{1}]", Name, Culture);
+				}
 			}
 			catch
 			{

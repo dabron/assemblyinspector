@@ -21,7 +21,7 @@ namespace AssemblyInspector
 
 		private string Culture { get; set; }
 		private string DotNetVersion { get; set; }
-		private bool IsCil { get; set; }
+//		private bool IsCil { get; set; }
 
 		public AssemblyInformation(string path)
 		{
@@ -102,7 +102,7 @@ namespace AssemblyInspector
 			ParseSnValid(result);
 		}
 
-		private string Start(string file, string args)
+		private static string Start(string file, string args)
 		{
 			string result;
 
@@ -153,7 +153,7 @@ namespace AssemblyInspector
 
 			if (!string.IsNullOrEmpty(DotNetVersion))
 			{
-				IsCil = Regex.Match(results, @"ILONLY\s*:\s*1\r\n").Success;
+//				IsCil = Regex.Match(results, @"ILONLY\s*:\s*1\r\n").Success;
 				IsSigned = Regex.Match(results, @"Signed\s*:\s*1\r\n").Success;
 
 				//Platform  PE     32BIT

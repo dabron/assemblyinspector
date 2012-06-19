@@ -72,7 +72,11 @@
   <ItemGroup>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="msvcr100.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <None Include="CorFlags.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
